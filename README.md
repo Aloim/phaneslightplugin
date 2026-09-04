@@ -1,8 +1,12 @@
 # PhanesLight
 
-> ## ⚠️ v3.7.1, the marketplace move
+> ## ⚠️ v3.7.1, the plugin has its own repository
 >
-> **The plugin's marketplace has moved to `Aloim/phanesplugin`. Re-add it there. Your commands do not change.** v3.7.1 also changes two rules in the lineup: the haiku tier no longer writes code, and the reviewer reviews your plan before the run starts.
+> **This repository is a plugin distribution source. It exists so that plugin marketplaces can find and serve PhanesLight, and it is built to be consumed through Claude Code's plugin system rather than by hand.** Add it as a marketplace and let the plugin manager install and update it for you. Nothing here is meant to be cloned, copied, or fetched into `.claude/commands/`: the `plugin/` tree is a plugin payload, not a prompt you install yourself, and the layout it uses (namespaced skills, plugin-registered hooks, templates resolved from `${CLAUDE_PLUGIN_ROOT}`) only works when the plugin manager is the thing loading it.
+>
+> **If you want the manual, single-file install, it is a different product at a different repository:** [`github.com/Aloim/phaneslight`](https://github.com/Aloim/phaneslight), where `phaneslight.md` is fetched into `.claude/commands/` the way it always was. Use that one if you would rather own the prompt file and your own hook entries.
+>
+> **The marketplace source moved here from `Aloim/phaneslight`, so re-add it. Your commands do not change.** v3.7.1 also changes two rules in the lineup: the haiku tier no longer writes code, and the reviewer reviews your plan before the run starts.
 >
 > **The project is PhanesLight, and the names moved with it.** `phanes.md` → `phaneslight.md`, `/phanes` → `/phaneslight:run`, `/phanesupgrade` → `/phaneslight:upgrade`, and project state moved from `.phanes/` to `.phaneslight/`.
 >
