@@ -1,23 +1,25 @@
 # PhanesLight
 
-> ## ⚠️ v3.7.0, the plugin release
+> ## ⚠️ v3.7.1, the marketplace move
 >
-> **This is a major release. PhanesLight is now a Claude Code plugin, the entry points are renamed, and the manual install path is closed. Existing installs must upgrade.**
+> **The plugin's marketplace has moved to `Aloim/phanesplugin`. Re-add it there. Your commands do not change.** v3.7.1 also changes two rules in the lineup: the haiku tier no longer writes code, and the reviewer reviews your plan before the run starts.
 >
 > **The project is PhanesLight, and the names moved with it.** `phanes.md` → `phaneslight.md`, `/phanes` → `/phaneslight:run`, `/phanesupgrade` → `/phaneslight:upgrade`, and project state moved from `.phanes/` to `.phaneslight/`.
 >
 > **PhanesLight now installs as a Claude Code plugin.** Add its marketplace and install it:
 >
 > ```
-> /plugin marketplace add Aloim/phaneslight
+> /plugin marketplace add Aloim/phanesplugin
 > /plugin install phaneslight@phaneslight
 > ```
 >
+> **If you added the marketplace from `Aloim/phaneslight` before v3.7.1**, that repository no longer holds the plugin; it holds the manual prompt now. Remove the old marketplace and add the new one. The plugin itself is still named `phaneslight`, so `/phaneslight:run` and `/phaneslight:upgrade` are unchanged.
+>
 > Then restart Claude Code and run `/phaneslight:run`. The entry points are namespaced now: `/phaneslight:run` and `/phaneslight:upgrade`.
 >
-> **The manual install path is retired at v3.6.2.** If you installed by fetching `phaneslight.md` into `.claude/commands/`, install the plugin and then run `/phaneslight:upgrade`, which archives the old command files so you are not left with two live entry points at different versions.
+> **The manual install path is maintained again, separately.** It was retired at v3.6.2 and is revived at v3.7.1, living at [`github.com/Aloim/phaneslight`](https://github.com/Aloim/phaneslight) as `phaneslight.md`. Pick one path and stay on it. If you are running both, install the plugin and then run `/phaneslight:upgrade`, which archives the old command files so you are not left with two live entry points at different versions.
 >
-> **The repository has moved to [`github.com/Aloim/phaneslight`](https://github.com/Aloim/phaneslight).** This is the new home. PhanesLight is a byproduct of a larger project, **Phanes**, a highly sophisticated agentic orchestration setup that is coming to the `Aloim/phanes` repository and inherits the Phanes name; that repository is frozen and no longer receives PhanesLight releases.
+> **This repository, [`github.com/Aloim/phanesplugin`](https://github.com/Aloim/phanesplugin), is the plugin's home.** The manual prompt lives at [`github.com/Aloim/phaneslight`](https://github.com/Aloim/phaneslight). PhanesLight is a byproduct of a larger project, **Phanes**, a highly sophisticated agentic orchestration setup that is coming to the `Aloim/phanes` repository and inherits the Phanes name.
 >
 > **Prefer the pre-ladder workflow?** v3.6.0 replaced the review chain with an escalation ladder. The last release that works the other way is v3.4.1, available from the repository's tags.
 
@@ -72,9 +74,9 @@ These are enhancements, not dependencies: a failed install becomes a TODO and th
 | Agent | Model | What it is for |
 | --- | --- | --- |
 | `<slug>-orchestrator` | Opus 5 | Authors, applies and dispatches. Main executor as well as orchestrator. |
-| `<slug>-reviewer` | Fable 5.1 | HIGH and CRIT findings only. Writes a fix plan and hands it back; never applies. |
+| `<slug>-reviewer` | Fable 5.1 | HIGH and CRIT findings, **and the plan review at every planned launch (v3.7.1)**. Writes a fix plan and hands it back; never applies. Writes **plan files and review artifacts** and names every one; never code. |
 | `<slug>-worker` | Sonnet 5 | The default working tier for authored code, within a dispatched scope, disclosing every edit. |
-| `<slug>-mechanic` | Haiku 4.5 | Mechanical transforms, indexing, archive condensation, fetch-and-digest retrieval. Never authored logic. |
+| `<slug>-mechanic` | Haiku 4.5 | Mechanical **non-code** transforms, doc indexing, archive condensation, fetch-and-digest retrieval. **Never writes code of any kind (v3.7.1)**, and escalates from LOW upward because it cannot fix anything itself. |
 | `<slug>-closure` | Sonnet 5 | Independent re-derivation at every close. Writes no code; its output is a flag, never a fix. |
 
 The expensive tier is affordable because it is rare: worker and mechanic escalate to whoever spawned them, the orchestrator handles MED itself, and only an undeferred HIGH or CRIT reaches Fable. **(v3.6.1)** A pinned model that is unreachable is retried with backoff, then substituted down a documented ladder with the substitution recorded, rather than halting its tier.
@@ -120,8 +122,8 @@ this shape rather than an open mesh.
  │ its own  │  │ retrieval │  │ back        │  │ re-runs the build  │
  │ scope    │  │           │  │             │  │ and tests itself   │
  ├──────────┤  ├───────────┤  ├─────────────┤  ├────────────────────┤
- │ writes   │  │ writes    │  │ writes      │  │ writes no code,    │
- │ in scope │  │ in scope  │  │ NOTHING     │  │ ever               │
+ │ writes   │  │ writes NO │  │ writes      │  │ writes no code,    │
+ │ in scope │  │ code, ever│  │ PLANS only  │  │ ever               │
  ╰────┬─────╯  ╰─────┬─────╯  ╰──────┬───┬──╯  ╰─────────┬──────────╯
       │              │               │   │               │
       │              │               │   ╰── may spawn -worker and -mechanic
@@ -157,8 +159,10 @@ create work anywhere:
    LOW   ·  INFO           ──►  create none, ever. They stay in the report,
                                 are never rehomed, never become follow-ups.
 
-   -worker / -mechanic finds something MED or above
-        │
+   -worker finds something MED or above
+   -mechanic finds something LOW or above  (v3.7.1: it may not write
+        │                                   code, so it cannot absorb
+        │                                   even a trivial fix itself)
         │   stops immediately. Does NOT attempt the fix.
         ▼
    its own spawner
@@ -174,7 +178,7 @@ create work anywhere:
    │ one-line justification.  │   │                │                 │
    │ Travels in the handover  │   │                ▼                 │
    │ until resolved or        │   │ -orchestrator applies it. The    │
-   │ explicitly closed. A     │   │ reviewer never touches the repo. │
+   │ explicitly closed. A     │   │ reviewer never touches source.   │
    │ deferred CRIT is named   │   ╰──────────────────────────────────╯
    │ in the handover's first  │
    │ line.                    │        MED never reaches the reviewer.
@@ -251,7 +255,7 @@ Think of it as refreshing Claude's knowledge of your project. **Launch update ru
 - **Model degradation is documented (v3.6.1).** "Fixed by role" governs the *choice*, not the *availability*. An unreachable pinned model is retried with backoff, then substituted down a per-role ladder, recorded in three places. The reviewer's ladder goes **up** (Fable → Opus): review is load-bearing and the wrong axis to economize on.
 - **Verification is load-bearing, not polish (v3.6.1).** Worker dispositions are repeatedly overturned on review, and so occasionally is the orchestrator's own HIGH finding. That is the design working. Budget the review pass into the plan rather than the slack; worker output is not shippable as-received, and a pass that finds nothing is a successful pass, never grounds for skipping the next.
 - **Single writer per artifact.** Every registry file, snapshot, summary and generated `_index.md` has exactly one writing agent. Many readers, one writer.
-- **Write rights follow the lineup, and every edit is disclosed.** The orchestrator writes unrestricted; workers and mechanics only inside a dispatched scope, naming every edit; the reviewer never writes; closure never writes code. An undisclosed edit is reported as drift.
+- **Write rights follow the lineup, and every edit is disclosed.** The orchestrator writes unrestricted; the worker only inside a dispatched scope, naming every edit; **the mechanic the same, but never code (v3.7.1)**; **the reviewer never writes code, and does write plan files and review artifacts, naming every one (v3.7.1)**; closure never writes code. An undisclosed edit is reported as drift.
 - **No UI approval by prose.** A proposal declares its viewports and reference designs up front; after apply, closure captures and runs an explicit pass/fail checklist. "Looks good" is not evidence. Missing capture tooling is diagnosed, remembered, and marked visually unverified rather than passed silently.
 - **Context injection over inheritance.** A sub-agent receives only the slice its tier allows and pulls bulky material through a mechanic digest. **(v3.6.1)** That digest is *unverified* material, not a source: any fact from one heading into a durable document is re-derived first, and counting tasks in particular are a false economy at that tier.
 - **Bounded fan-out.** No more than 5 sub-agents at once, whatever the harness allows. A wider sweep is recommended to you, never quietly self-multiplied. Every session summary records the fan-out ledger.
@@ -299,7 +303,7 @@ With Node.js 18+ you can instead run `npm install -g @anthropic-ai/claude-code`.
 PhanesLight is distributed as a Claude Code plugin.
 
 ```
-/plugin marketplace add Aloim/phaneslight
+/plugin marketplace add Aloim/phanesplugin
 /plugin install phaneslight@phaneslight
 ```
 
@@ -401,4 +405,4 @@ You are free to use, share and adapt it for any **non-commercial** purpose with 
 
 ## Contributing
 
-Issues and pull requests are welcome at [`github.com/Aloim/phaneslight`](https://github.com/Aloim/phaneslight). A substantive change to `phaneslight.md` should explain which class of failure mode it closes, because PhanesLight is a defensive document and every clause is load-bearing.
+Issues and pull requests are welcome at [`github.com/Aloim/phanesplugin`](https://github.com/Aloim/phanesplugin). A substantive change to `phaneslight.md` should explain which class of failure mode it closes, because PhanesLight is a defensive document and every clause is load-bearing.

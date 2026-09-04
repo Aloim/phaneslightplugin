@@ -1,4 +1,4 @@
-# phaneslight-template v3.7.0 preflight
+# phaneslight-template v3.7.1 preflight
 # Phase 0 mechanical pre-flights, observed and reported, NEVER acted on: run-type marker,
 # installed version, the four standard MCP servers via `claude mcp list`, platform,
 # capability-census counts, and the legacy-migration signals. Emits ONE digest JSON. Consent, AskUserQuestion, MCP installs, the

@@ -6,6 +6,50 @@ All notable changes to **PhanesLight**. The authoritative version marker is the 
 
 ---
 
+## v3.7.1 (2026-09-04)
+
+**The marketplace moves, and two rules in the lineup change. The haiku tier stops writing code entirely, and the reviewer picks up planning as its first duty.**
+
+### 1. The marketplace has moved to `Aloim/phanesplugin`
+
+The plugin, its marketplace and its skills now live at **`Aloim/phanesplugin`**. `Aloim/phaneslight` no longer holds the plugin; it holds the manual prompt, which is maintained again from v3.7.1 onward.
+
+```
+/plugin marketplace add Aloim/phanesplugin
+/plugin install phaneslight@phaneslight
+```
+
+**Nothing you type changes.** The plugin is still named `phaneslight` and the marketplace is still named `phaneslight`, so `/phaneslight:run` and `/phaneslight:upgrade` are exactly as they were. Only the source repository moved. If you added the marketplace from `Aloim/phaneslight`, remove it and add the new one; the old source will stop resolving to a plugin.
+
+**Why the split.** v3.7.0 retired the manual install path and folded everything into the plugin. Keeping both alive turned out to be worth the separate repository: the plugin and the manual prompt have genuinely different mechanics for version checking, script delivery and hook registration, and holding both in one repository meant one of them was always the awkward case. They are two products now, each with its own home.
+
+### 2. The haiku tier never writes code
+
+`<projectSlug>-mechanic` may no longer write code of any kind. Its dispatched scope is mechanical **non-code** work only: formatting, documentation indexing, archive condensation, and the retrieval-and-digest duty it already carried. A task that turns out to need authored code comes back to its spawner unwritten, with a description of what the task needs. It is also no longer named as an agent that may create files under `tests/`, because a test file is code.
+
+**Its escalation threshold drops from MED to LOW, and that follows from the write restriction rather than from any reassessment of severity.** A mechanic that could write was able to fix a LOW in passing and move on. One that cannot write has nowhere to put a LOW except upward, and a LOW it keeps to itself is a LOW nobody else will ever see. What travels is a report, not a work item: the spawner applies the ordinary ladder to what arrives, and a LOW from a mechanic still creates no work unless the spawner independently regrades it. INFO never travels, from any agent.
+
+The worker is untouched. It still writes code within its dispatched scope and still escalates at MED.
+
+**Why.** The haiku tier is the cheapest in the lineup and is dispatched for the work where its cheapness pays: fetching, digesting, formatting, indexing. Code was always outside what it was pinned for, and the model rubric had said so since v3.6.0 (`Never for authored logic`), but the write-rights table still granted it edits within a dispatched scope, so the restriction depended on every dispatcher choosing correctly rather than on the lineup refusing. This closes the gap in the table rather than in the guidance.
+
+### 3. The reviewer plans first, and writes plan files
+
+**A new duty at launch.** When the primary session launches `<projectSlug>-orchestrator` with a plan, the orchestrator's first act, before the first execution step and before any worker or mechanic dispatch, is to spawn `<projectSlug>-reviewer` against that plan. The reviewer returns a plan review naming what the repository contradicts, what is sequenced wrong, what acceptance checks are missing, and what work the plan implies without stating. On CRIT or HIGH the orchestrator stops and takes the finding to the user. A run that was handed no plan skips this entirely.
+
+**The reviewer may write the plan file.** It amends the plan in place or authors a corrected one under `documentation/plans/`, and names every file it wrote in its return. This is the only writing it does and it is documentation: it never touches code, and the orchestrator still applies every code change itself. A reviewer that rewrites a plan silently is as much a defect as a worker with an undisclosed edit.
+
+**The old wording was misleading and is corrected.** Up to v3.7.0 the spec said flatly that the reviewer "never writes", while simultaneously requiring it to author fix plans, and the Phase 4 generation checklist called any reviewer write grant a generation defect. The two could not both be honoured. The rule now says what it always meant: the reviewer never writes **code**. A reviewer generated as wholly read-only now fails the generation check just as a reviewer granted code writes does, because it cannot perform the duty the lineup assigns it.
+
+**This costs more, deliberately.** The fable tier now fires once per planned launch where it previously fired only on HIGH and CRIT. The trade is that a defect caught in the plan costs one review, while the same defect caught at close costs every step built on top of it.
+
+**Installed project impact:**
+- Affected: `.claude/agents/<projectSlug>-mechanic.md` (no code writes, escalate-at-LOW, tool grant narrowed, no `tests/` authoring); `.claude/agents/<projectSlug>-reviewer.md` (plan-file and review-artifact writes granted, the launch plan-review duty added); the project root `CLAUDE.md` Pinned Directives block (the lineup summary and the escalate-by-severity directive both restate the new thresholds and the plan-review duty); `.claude/template/agent-definition.md` where installed; `.phaneslight/scripts/` and `.claude/template/` (all template stamps move to `phaneslight-template v3.7.1`); and `.phaneslight/config.json` (`"phanesLightVersion": "3.7.1"`).
+- Breaking: **yes, for dispatch habits, and no, for any script or file format.** No script signature, exit code or manifest schema changed, and `migrationBoundaries` is unchanged, so this is a normal update run rather than a migration. What changed is what a mechanic dispatch may be asked to do: a workflow, a chained procedure or a habit that dispatches `<projectSlug>-mechanic` to edit source now routes that work to `<projectSlug>-worker` instead. Expect more escalations from the mechanic than before, at LOW, and treat that as the rule working rather than as noise. Planned launches gain one fable dispatch each. **Separately and importantly: the marketplace source moved**, so the plugin manager will not deliver this or any later release until you re-add the marketplace from `Aloim/phanesplugin`.
+- Verify: `.phaneslight/config.json` contains `"phanesLightVersion": "3.7.1"`; `<slug>-mechanic` states that it never writes code and escalates at LOW; `<slug>-reviewer` states that it never writes code, that it writes plan files and names them, and that it reviews the plan at launch; the root `CLAUDE.md` names the plan-review duty; `.claude/agents/` still contains exactly five files; and every installed template's stamp reads `phaneslight-template v3.7.1`. Run `/phaneslight:upgrade`.
+
+---
+
 ## v3.7.0 (2026-09-03)
 
 **PhanesLight becomes a Claude Code plugin.** Installation, updates and hook registration all move to the plugin system. The manual install path is retired.
