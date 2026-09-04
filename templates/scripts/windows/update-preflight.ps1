@@ -301,21 +301,32 @@ $cfgOk = ($cfgRead.Status -ceq 'ok')
 
 # ---------- hooks sensor (the folded hook-verify) ----------
 function Get-HooksSensor {
+  # (v3.7.1) Rewritten for plugin-registered hooks, and the change is a correction rather than
+  # a refinement. Until v3.7.0 the run merged the three hook entries into the project's own
+  # .claude/settings.json, so reading that file WAS reading the hook table and `present` meant
+  # what it said. The plugin now registers all three from its own hooks/hooks.json, which this
+  # script cannot see and has no business asserting about, and Step 4b requires any surviving
+  # project-level entry to be REMOVED. Keying `present` off settings.json therefore inverted the
+  # verdict: a fully compliant v3.7.1 project reported all three hooks absent, forced delta true,
+  # and made `quiet` unreachable, so the fast path this aggregator exists to provide was dead on
+  # every correctly migrated project. `scriptExists` was gated behind the same lookup, so the one
+  # fact that was true went unobserved as well.
+  #
+  # What the run actually owns is the SCRIPTS on disk, so that is what is measured. A surviving
+  # settings.json entry is measured too, as the stale-entry delta Step 4b names, and it is the
+  # only thing that file is now consulted for.
   $sensor = [ordered]@{ available = $true; delta = $false }
   $settingsPath = Join-Path $script:root '.claude\settings.json'
-  # m5 repair, an inverse inconsistency rather than a missing guard. The three input states
-  # collapsed into two here, and they collapsed the wrong way round: a MALFORMED settings file
-  # correctly reported available: false, while an ABSENT one reported available: true, and an
-  # UNREADABLE one (denied ACL) was silently treated as absent by Test-Path's failure. Absent is
-  # a genuine observation, and the honest reading of it is "no hooks are configured", so it stays
-  # available with delta true from the per-hook loop below. Unreadable and malformed are both
-  # could-not-observe and now report identically.
+  # Three input states, kept distinct. Absent is a genuine observation and the healthy one now:
+  # no project-level entries is exactly what a v3.7.0+ project should look like. Unreadable and
+  # malformed are both could-not-observe, and a stale entry cannot be ruled out from either, so
+  # they report available false with delta true rather than a clean bill.
   $settings = $null
   $sr = Read-PhanesLightJsonFile $settingsPath
   if ($sr.Status -ceq 'ok') { $settings = $sr.Value }
   elseif ($sr.Status -cne 'absent') {
     $sensor.available = $false; $sensor.delta = $true
-    $sensor.reason = ".claude/settings.json is $($sr.Status) ($($sr.Reason))"
+    $sensor.reason = ".claude/settings.json is $($sr.Status) ($($sr.Reason)); a stale project-level hook entry could not be ruled out"
     return $sensor
   }
   $wanted = @(
@@ -324,22 +335,21 @@ function Get-HooksSensor {
     @{ key = 'ledgerStatus'; event = 'SessionStart'; needle = 'hook-ledger-status' }
   )
   foreach ($w in $wanted) {
-    $entry = [ordered]@{ present = $false; pathDiscipline = $false; scriptExists = $false }
-    $cmd = $null
+    $entry = [ordered]@{ scriptExists = $false; staleProjectEntry = $false }
+    # Unconditional, and deliberately not gated behind the settings read: this is the fact the
+    # run is responsible for and the one the old sensor never reached.
+    $entry.scriptExists = (Test-Path -LiteralPath (Join-Path $script:root ('.phaneslight\scripts\' + $w.needle + '.ps1')))
     if ($settings -and $settings.hooks -and $settings.hooks.($w.event)) {
       foreach ($grp in @($settings.hooks.($w.event))) {
         foreach ($h in @($grp.hooks)) {
-          if (($h.command -is [string]) -and ([string]$h.command).IndexOf($w.needle, [System.StringComparison]::Ordinal) -ge 0) { $cmd = [string]$h.command; break }
+          if (($h.command -is [string]) -and ([string]$h.command).IndexOf($w.needle, [System.StringComparison]::Ordinal) -ge 0) {
+            $entry.staleProjectEntry = $true
+          }
         }
-        if ($null -ne $cmd) { break }
+        if ($entry.staleProjectEntry) { break }
       }
     }
-    if ($null -ne $cmd) {
-      $entry.present = $true
-      $entry.pathDiscipline = (($cmd.IndexOf('.phaneslight/scripts/', [System.StringComparison]::Ordinal) -ge 0) -and -not ($cmd -match '(?i)[a-z]:[\\/]') -and -not ($cmd -match '(^|\s)/'))
-      $entry.scriptExists = (Test-Path -LiteralPath (Join-Path $script:root ('.phaneslight\scripts\' + $w.needle + '.ps1')))
-    }
-    if (-not ($entry.present -and $entry.pathDiscipline -and $entry.scriptExists)) { $sensor.delta = $true }
+    if ((-not $entry.scriptExists) -or $entry.staleProjectEntry) { $sensor.delta = $true }
     $sensor[$w.key] = $entry
   }
   return $sensor

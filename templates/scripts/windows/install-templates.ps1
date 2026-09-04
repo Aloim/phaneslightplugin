@@ -301,7 +301,8 @@ try {
 if ($null -eq $ownVersion) { Fail 'cannot read own version stamp' }
 # (v3.7.0) Source resolution, in order. The plugin ships the template library with it, so the
 # normal path is a local directory and the install touches no network at all. The caller
-# (Phase 2.5) passes -Source "${CLAUDE_PLUGIN_ROOT}/templates". If it did not, fall back to
+# (Phase 2.5) passes --source "${CLAUDE_PLUGIN_ROOT}/templates" (the literal double-dash flag
+# this script parses; there is no PowerShell -Source parameter). If it did not, fall back to
 # the env var the plugin runtime sets, and only then to the tag-pinned URL. That URL points at the
 # PLUGIN repository: the manual line's library at Aloim/phaneslight carries a settings fragment and
 # no migrationBoundaries, so fetching it into a plugin install would skew Step 0 and the hook merge.
