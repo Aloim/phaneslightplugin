@@ -17,7 +17,9 @@
 >
 > Then restart Claude Code and run `/phaneslight:run`. The entry points are namespaced now: `/phaneslight:run` and `/phaneslight:upgrade`.
 >
-> **The manual install path is maintained again, separately.** It was retired at v3.6.2 and is revived at v3.7.1, living at [`github.com/Aloim/phaneslight`](https://github.com/Aloim/phaneslight) as `phaneslight.md`. Pick one path and stay on it. If you are running both, install the plugin and then run `/phaneslight:upgrade`, which archives the old command files so you are not left with two live entry points at different versions.
+> **Why the move.** This plugin was built for the **Claude community marketplace**. Publishing it into `Aloim/phaneslight` at v3.7.0 replaced the manual prompt that lived there and retired the manual install path as a side effect, which was never the intent. Both halves are corrected at v3.7.1: the plugin has its own repository here, and `Aloim/phaneslight` is the manual, single-file PhanesLight again.
+>
+> **The manual install path is maintained again, separately**, at [`github.com/Aloim/phaneslight`](https://github.com/Aloim/phaneslight) as `phaneslight.md`. Pick one path and stay on it; running both leaves two live entry points at the same version with no documented precedence. To leave the plugin for the manual install, run `/plugin uninstall phaneslight@phaneslight` and `/plugin marketplace remove phaneslight`, then follow "Coming from the plugin" in that repository's README. If you are currently running both, install the plugin and then run `/phaneslight:upgrade`, which archives the old command files.
 >
 > **This repository, [`github.com/Aloim/phanesplugin`](https://github.com/Aloim/phanesplugin), is the plugin's home.** The manual prompt lives at [`github.com/Aloim/phaneslight`](https://github.com/Aloim/phaneslight). PhanesLight is a byproduct of a larger project, **Phanes**, a highly sophisticated agentic orchestration setup that is coming to the `Aloim/phanes` repository and inherits the Phanes name.
 >
