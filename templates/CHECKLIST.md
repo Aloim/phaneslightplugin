@@ -1,7 +1,7 @@
 <!-- DOC | The install checklist PhanesLight works through when it fetches the v3.7.1 script template library. -->
 <!-- phaneslight-template v3.7.1 CHECKLIST -->
 
-# Template install checklist (v3.7.0)
+# Template install checklist (v3.7.1)
 
 PhanesLight works through this list during Phase 2.5 Step 4 when it fetches the script template library, and mirrors the outcome of every item into the bootstrap session summary. This file ships pinned to the template version, so the checklist and the scripts can never fall out of step.
 

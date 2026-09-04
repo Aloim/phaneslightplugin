@@ -302,13 +302,14 @@ if ($null -eq $ownVersion) { Fail 'cannot read own version stamp' }
 # (v3.7.0) Source resolution, in order. The plugin ships the template library with it, so the
 # normal path is a local directory and the install touches no network at all. The caller
 # (Phase 2.5) passes -Source "${CLAUDE_PLUGIN_ROOT}/templates". If it did not, fall back to
-# the env var the plugin runtime sets, and only then to the tag-pinned URL, which remains
-# correct for a library installed by hand from a released tag.
+# the env var the plugin runtime sets, and only then to the tag-pinned URL. That URL points at the
+# PLUGIN repository: the manual line's library at Aloim/phaneslight carries a settings fragment and
+# no migrationBoundaries, so fetching it into a plugin install would skew Step 0 and the hook merge.
 if ($null -eq $source -and $env:CLAUDE_PLUGIN_ROOT) {
   $candidate = Join-Path $env:CLAUDE_PLUGIN_ROOT 'templates'
   if (Test-Path -LiteralPath $candidate -PathType Container) { $source = $candidate }
 }
-if ($null -eq $source) { $source = "https://raw.githubusercontent.com/Aloim/phaneslight/v$ownVersion/templates" }
+if ($null -eq $source) { $source = "https://raw.githubusercontent.com/Aloim/phaneslightplugin/v$ownVersion/templates" }
 $sourceIsDir = Test-Path -LiteralPath $source -PathType Container
 
 $root = Find-PhanesLightRoot

@@ -55,7 +55,12 @@ const args = isWindows
 // stdio inherit hands the hook script the harness's own stdin, which is where the hook JSON
 // payload arrives, and its stdout, which is the channel back to the session. Buffering either
 // would break scripts that read the payload to decide.
-const r = spawnSync(cmd, args, { stdio: 'inherit', windowsHide: true });
+// cwd is pinned to the project root rather than inherited. The hook scripts locate the project
+// by walking up from the touched file, but the siblings they delegate to (loc-check, doc-check,
+// register-check) locate it from the current directory, exactly as the pre-v3.7.0 project-relative
+// settings.json entries did. The harness runs hooks at the project root so inheriting would work;
+// pinning removes the dependency on that instead of documenting it.
+const r = spawnSync(cmd, args, { stdio: 'inherit', windowsHide: true, cwd: projectDir });
 
 if (r.error) {
   process.stderr.write('phaneslight hook-run: could not start ' + cmd + ' for ' + name + ': ' + r.error.message + '\n');
