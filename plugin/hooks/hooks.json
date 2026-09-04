@@ -6,7 +6,7 @@
         "hooks": [
           {
             "type": "command",
-            "command": "powershell -NoProfile -ExecutionPolicy Bypass -File ${CLAUDE_PROJECT_DIR}/.phaneslight/scripts/hook-stamp-guard.ps1"
+            "command": "node \"${CLAUDE_PLUGIN_ROOT}/scripts/hook-run.js\" hook-stamp-guard"
           }
         ]
       }
@@ -17,7 +17,7 @@
         "hooks": [
           {
             "type": "command",
-            "command": "powershell -NoProfile -ExecutionPolicy Bypass -File ${CLAUDE_PROJECT_DIR}/.phaneslight/scripts/hook-size-check.ps1"
+            "command": "node \"${CLAUDE_PLUGIN_ROOT}/scripts/hook-run.js\" hook-size-check"
           }
         ]
       }
@@ -27,7 +27,7 @@
         "hooks": [
           {
             "type": "command",
-            "command": "powershell -NoProfile -ExecutionPolicy Bypass -File ${CLAUDE_PROJECT_DIR}/.phaneslight/scripts/hook-ledger-status.ps1"
+            "command": "node \"${CLAUDE_PLUGIN_ROOT}/scripts/hook-run.js\" hook-ledger-status"
           }
         ]
       },
@@ -36,7 +36,7 @@
         "hooks": [
           {
             "type": "command",
-            "command": "powershell -NoProfile -ExecutionPolicy Bypass -File ${CLAUDE_PLUGIN_ROOT}/scripts/install-notice.ps1"
+            "command": "node \"${CLAUDE_PLUGIN_ROOT}/scripts/install-notice.js\""
           }
         ]
       }

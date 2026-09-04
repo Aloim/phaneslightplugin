@@ -10,12 +10,12 @@ All notable changes to **PhanesLight**. The authoritative version marker is the 
 
 **The marketplace moves, and two rules in the lineup change. The haiku tier stops writing code entirely, and the reviewer picks up planning as its first duty.**
 
-### 1. The marketplace has moved to `Aloim/phanesplugin`
+### 1. The marketplace has moved to `Aloim/phaneslightplugin`
 
-The plugin, its marketplace and its skills now live at **`Aloim/phanesplugin`**. `Aloim/phaneslight` no longer holds the plugin; it holds the manual prompt, which is maintained again from v3.7.1 onward.
+The plugin, its marketplace and its skills now live at **`Aloim/phaneslightplugin`**. `Aloim/phaneslight` no longer holds the plugin; it holds the manual prompt, which is maintained again from v3.7.1 onward.
 
 ```
-/plugin marketplace add Aloim/phanesplugin
+/plugin marketplace add Aloim/phaneslightplugin
 /plugin install phaneslight@phaneslight
 ```
 
@@ -43,9 +43,22 @@ The worker is untouched. It still writes code within its dispatched scope and st
 
 **This costs more, deliberately.** The fable tier now fires once per planned launch where it previously fired only on HIGH and CRIT. The trade is that a defect caught in the plan costs one review, while the same defect caught at close costs every step built on top of it.
 
+### 4. The hooks run on macOS and Linux
+
+Every entry in the plugin's `hooks/hooks.json` invoked `powershell -File ...`. That is correct on Windows and unrunnable anywhere else, and since `hooks.json` ships to every platform identically there was no place left to make the choice per platform. Until v3.7.0 there was: the run merged hook entries into each project's own `.claude/settings.json`, so it could write a shell entry on POSIX and omit an entry outright where no variant of that hook existed. Moving registration into the plugin took that away without replacing it.
+
+The entries now run `node "${CLAUDE_PLUGIN_ROOT}/scripts/hook-run.js" <hook-name>`. The launcher resolves `${CLAUDE_PROJECT_DIR}/.phaneslight/scripts/<hook-name>` with the extension its own platform installs, runs it through `powershell` on Windows and `sh` elsewhere, and **passes the hook script's exit code through unchanged**, so `hook-stamp-guard` still blocks a `Write` exactly as before. Node is the one interpreter guaranteed present, because Claude Code is itself a Node program.
+
+**A hook with no variant on this platform is now a silent no-op rather than a broken command.** That is what `hook-ledger-status` is on POSIX, where it still has no sibling, and it is also what all three are in a project that has no `.phaneslight/` at all. `scripts/install-notice.ps1` is ported to `scripts/install-notice.js` and runs directly under Node with no launcher; its marker filename is unchanged, so an install already welcomed is not welcomed twice.
+
+### 5. Manifest and register corrections
+
+- **`license` is the SPDX identifier `CC-BY-NC-4.0`** in `plugin.json`, where it read `See LICENSE`. The licence itself is unchanged; a marketplace reading the manifest can now identify it.
+- **The identity paragraph drops its invented credentials.** `skills/run/SKILL.md` opened by naming PhanesLight a laureate of an award and chief architect of an institute, neither of which exists, and the objective asked for "world-class, award-winning" sub-agents. The wording is now the one the v4.0 line already ships: what the orchestrator does, stated plainly. No directive, phase, rule or threshold changed; this is register only. The **manual** prompt at `Aloim/phaneslight` is untouched and keeps its original opening.
+
 **Installed project impact:**
-- Affected: `.claude/agents/<projectSlug>-mechanic.md` (no code writes, escalate-at-LOW, tool grant narrowed, no `tests/` authoring); `.claude/agents/<projectSlug>-reviewer.md` (plan-file and review-artifact writes granted, the launch plan-review duty added); the project root `CLAUDE.md` Pinned Directives block (the lineup summary and the escalate-by-severity directive both restate the new thresholds and the plan-review duty); `.claude/template/agent-definition.md` where installed; `.phaneslight/scripts/` and `.claude/template/` (all template stamps move to `phaneslight-template v3.7.1`); and `.phaneslight/config.json` (`"phanesLightVersion": "3.7.1"`).
-- Breaking: **yes, for dispatch habits, and no, for any script or file format.** No script signature, exit code or manifest schema changed, and `migrationBoundaries` is unchanged, so this is a normal update run rather than a migration. What changed is what a mechanic dispatch may be asked to do: a workflow, a chained procedure or a habit that dispatches `<projectSlug>-mechanic` to edit source now routes that work to `<projectSlug>-worker` instead. Expect more escalations from the mechanic than before, at LOW, and treat that as the rule working rather than as noise. Planned launches gain one fable dispatch each. **Separately and importantly: the marketplace source moved**, so the plugin manager will not deliver this or any later release until you re-add the marketplace from `Aloim/phanesplugin`.
+- Affected: the plugin's own `hooks/hooks.json` and `scripts/` (no project file changes from item 4; reinstall or update the plugin to pick them up); `.claude/agents/<projectSlug>-mechanic.md` (no code writes, escalate-at-LOW, tool grant narrowed, no `tests/` authoring); `.claude/agents/<projectSlug>-reviewer.md` (plan-file and review-artifact writes granted, the launch plan-review duty added); the project root `CLAUDE.md` Pinned Directives block (the lineup summary and the escalate-by-severity directive both restate the new thresholds and the plan-review duty); `.claude/template/agent-definition.md` where installed; `.phaneslight/scripts/` and `.claude/template/` (all template stamps move to `phaneslight-template v3.7.1`); and `.phaneslight/config.json` (`"phanesLightVersion": "3.7.1"`).
+- Breaking: **yes, for dispatch habits, and no, for any script or file format.** No script signature, exit code or manifest schema changed, and `migrationBoundaries` is unchanged, so this is a normal update run rather than a migration. What changed is what a mechanic dispatch may be asked to do: a workflow, a chained procedure or a habit that dispatches `<projectSlug>-mechanic` to edit source now routes that work to `<projectSlug>-worker` instead. Expect more escalations from the mechanic than before, at LOW, and treat that as the rule working rather than as noise. Planned launches gain one fable dispatch each. **Separately and importantly: the marketplace source moved**, so the plugin manager will not deliver this or any later release until you re-add the marketplace from `Aloim/phaneslightplugin`.
 - Verify: `.phaneslight/config.json` contains `"phanesLightVersion": "3.7.1"`; `<slug>-mechanic` states that it never writes code and escalates at LOW; `<slug>-reviewer` states that it never writes code, that it writes plan files and names them, and that it reviews the plan at launch; the root `CLAUDE.md` names the plan-review duty; `.claude/agents/` still contains exactly five files; and every installed template's stamp reads `phaneslight-template v3.7.1`. Run `/phaneslight:upgrade`.
 
 ---

@@ -13,7 +13,7 @@
 > **PhanesLight now installs as a Claude Code plugin.** Add its marketplace and install it:
 >
 > ```
-> /plugin marketplace add Aloim/phanesplugin
+> /plugin marketplace add Aloim/phaneslightplugin
 > /plugin install phaneslight@phaneslight
 > ```
 >
@@ -25,7 +25,7 @@
 >
 > **The manual install path is maintained again, separately**, at [`github.com/Aloim/phaneslight`](https://github.com/Aloim/phaneslight) as `phaneslight.md`. Pick one path and stay on it; running both leaves two live entry points at the same version with no documented precedence. To leave the plugin for the manual install, run `/plugin uninstall phaneslight@phaneslight` and `/plugin marketplace remove phaneslight`, then follow "Coming from the plugin" in that repository's README. If you are currently running both, install the plugin and then run `/phaneslight:upgrade`, which archives the old command files.
 >
-> **This repository, [`github.com/Aloim/phanesplugin`](https://github.com/Aloim/phanesplugin), is the plugin's home.** The manual prompt lives at [`github.com/Aloim/phaneslight`](https://github.com/Aloim/phaneslight). PhanesLight is a byproduct of a larger project, **Phanes**, a highly sophisticated agentic orchestration setup that is coming to the `Aloim/phanes` repository and inherits the Phanes name.
+> **This repository, [`github.com/Aloim/phaneslightplugin`](https://github.com/Aloim/phaneslightplugin), is the plugin's home.** The manual prompt lives at [`github.com/Aloim/phaneslight`](https://github.com/Aloim/phaneslight). PhanesLight is a byproduct of a larger project, **Phanes**, a highly sophisticated agentic orchestration setup that is coming to the `Aloim/phanes` repository and inherits the Phanes name.
 >
 > **Prefer the pre-ladder workflow?** v3.6.0 replaced the review chain with an escalation ladder. The last release that works the other way is v3.4.1, available from the repository's tags.
 
@@ -301,7 +301,8 @@ With Node.js 18+ you can instead run `npm install -g @anthropic-ai/claude-code`.
 
 - [Claude Code](https://claude.com/claude-code), installed and authenticated.
 - `git`, plus your project's own language toolchain.
-- On **Windows, PowerShell 5.1+** (ships with Windows). This release is Windows-first; POSIX parity lands in a later version.
+- On **Windows, PowerShell 5.1+** (ships with Windows). On **macOS and Linux**, a POSIX shell.
+- **This release is Windows-first, and the gap is in the script library, not in the plugin.** The plugin's hooks dispatch through Node and run correctly on every platform as of v3.7.1. What is still Windows-only is part of the bootstrap script set PhanesLight installs into a project: `preflight`, `scaffold`, `install-templates`, `ledger`, `manifest-write`, `census-diff`, `update-preflight`, `repo-manifest`, `batch-apply` and the `hook-ledger-status` hook have no POSIX sibling yet, and the run falls back to doing that work itself. The checks that matter most day to day, `doc-check`, `doc-index`, `loc-check`, `register-check`, `new-file`, `module-list`, `list-apis`, and the `hook-stamp-guard` and `hook-size-check` hooks, are on both platforms. Full parity lands in a later version.
 - Recommended: `uv`, which runs the `serena` and `semble` MCP servers. The first run offers to install everything it needs.
 
 ### Install the plugin
@@ -309,7 +310,7 @@ With Node.js 18+ you can instead run `npm install -g @anthropic-ai/claude-code`.
 PhanesLight is distributed as a Claude Code plugin.
 
 ```
-/plugin marketplace add Aloim/phanesplugin
+/plugin marketplace add Aloim/phaneslightplugin
 /plugin install phaneslight@phaneslight
 ```
 
@@ -411,4 +412,4 @@ You are free to use, share and adapt it for any **non-commercial** purpose with 
 
 ## Contributing
 
-Issues and pull requests are welcome at [`github.com/Aloim/phanesplugin`](https://github.com/Aloim/phanesplugin). A substantive change to `phaneslight.md` should explain which class of failure mode it closes, because PhanesLight is a defensive document and every clause is load-bearing.
+Issues and pull requests are welcome at [`github.com/Aloim/phaneslightplugin`](https://github.com/Aloim/phaneslightplugin). A substantive change to `phaneslight.md` should explain which class of failure mode it closes, because PhanesLight is a defensive document and every clause is load-bearing.

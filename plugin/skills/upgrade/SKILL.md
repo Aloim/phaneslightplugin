@@ -3,7 +3,7 @@ description: PhanesLight upgrade run. Migrates an older or manually installed Ph
 disable-model-invocation: true
 ---
 <!-- PhanesLightUpgrade v3.7.1, 2026-09-04, production upgrade prompt for existing PhanesLight installations.
-     Upgrades: ANY installed PhanesLight version → the PhanesLight shipped by this plugin, whose marketplace is github.com/Aloim/phanesplugin.
+     Upgrades: ANY installed PhanesLight version → the PhanesLight shipped by this plugin, whose marketplace is github.com/Aloim/phaneslightplugin.
      Companion to phaneslight.md. Version jumps run here; same-version refreshes are /phaneslight:run update runs.
      Versioning: from v3.3 on, PhanesLightUpgrade carries the PhanesLight version, no independent line; it is
      re-stamped on every PhanesLight release whether its own content changed or not. One framework, one number. -->
