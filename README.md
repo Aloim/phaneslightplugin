@@ -67,11 +67,11 @@ These are enhancements, not dependencies: a failed install becomes a TODO and th
 
 **3. Project memory infrastructure.** The substrate every sub-agent works against:
 
-- **`documentation/`** — session summaries, plans, dated architecture snapshots, and a curated API registry capturing what code search cannot see (deprecations, contracts beyond type signatures, anti-patterns). Every folder carries a **generated `_index.md`**, so agents find knowledge by descending indexes at a few hundred tokens a hop instead of scanning the tree. **(v3.6.1)** Indexes are ordered by filename rather than modification time, so a sequenced folder's newest entry is its first line and editing an old document no longer reorders the whole index. Files respect a 500-line soft ceiling.
-- **`tests/`** — `unit/`, `integration/`, `e2e/`, `fixtures/`, `helpers/`, with the same header-stamp discipline `src/` uses.
-- **`.phaneslight/scripts/`** — the library that owns every mechanical rule: stamped file creation, line counts, documentation audit, index regeneration, hot-file character budgets, API baseline regeneration and diffing. Each script finds the project by walking up to `.phaneslight/config.json` and uses only root-relative paths, so a hook can never be wired to the wrong tree. **On Windows, ten more commands** mechanize what a run previously did by hand — `preflight`, `update-preflight`, `install-templates`, `scaffold`, `manifest-write`, `ledger`, `census-diff`, `hook-ledger-status`, `repo-manifest`, `batch-apply` — turning thirty to fifty tool calls into one digest and letting a re-run measure what moved before rebuilding. **Every one observes or writes what it is told to and decides nothing.** On POSIX they are refused by name rather than faked, and the manual flow is unchanged.
-- **`.phaneslight/returns/`** — **(v3.6.1)** durable sub-agent returns, written before the next dispatch. See [Core principles](#core-principles-enforced-by-phaneslight).
-- **Enforcement hooks** — registered by the plugin, not written into your `.claude/settings.json`, and enforcing rules at the harness layer: a blocking guard denying any unstamped new file, an advisory check running size and documentation audits on every write. Prompts forget under context pressure. Hooks cannot.
+- **`documentation/`**: session summaries, plans, dated architecture snapshots, and a curated API registry capturing what code search cannot see (deprecations, contracts beyond type signatures, anti-patterns). Every folder carries a **generated `_index.md`**, so agents find knowledge by descending indexes at a few hundred tokens a hop instead of scanning the tree. **(v3.6.1)** Indexes are ordered by filename rather than modification time, so a sequenced folder's newest entry is its first line and editing an old document no longer reorders the whole index. Files respect a 500-line soft ceiling.
+- **`tests/`**: `unit/`, `integration/`, `e2e/`, `fixtures/`, `helpers/`, with the same header-stamp discipline `src/` uses.
+- **`.phaneslight/scripts/`**: the library that owns every mechanical rule: stamped file creation, line counts, documentation audit, index regeneration, hot-file character budgets, API baseline regeneration and diffing. Each script finds the project by walking up to `.phaneslight/config.json` and uses only root-relative paths, so a hook can never be wired to the wrong tree. **Ten more commands, on both platforms from v3.7.2,** mechanize what a run previously did by hand (`preflight`, `update-preflight`, `install-templates`, `scaffold`, `manifest-write`, `ledger`, `census-diff`, `hook-ledger-status`, `repo-manifest`, `batch-apply`), turning thirty to fifty tool calls into one digest and letting a re-run measure what moved before rebuilding. **Every one observes or writes what it is told to and decides nothing.**
+- **`.phaneslight/returns/`**: **(v3.6.1)** durable sub-agent returns, written before the next dispatch. See [Core principles](#core-principles-enforced-by-phaneslight).
+- **Enforcement hooks**: registered by the plugin, not written into your `.claude/settings.json`, and enforcing rules at the harness layer: a blocking guard denying any unstamped new file, an advisory check running size and documentation audits on every write. Prompts forget under context pressure. Hooks cannot.
 
 **4. Tiered workflows.** Every task is sorted into **T1** (single-file fix), **T2** (feature inside one module) or **T3** (cross-module). Each tier loads different context and engages a different chain, but **disclosure is universal**: even a T1 fix is named in a report, and closure reconciles what landed against what was intended at every close. Only the paper trail scales with tier. A task that outgrows its tier mid-flight stops and asks for promotion.
 
@@ -199,7 +199,7 @@ create work anywhere:
    nobody reported: an edit no one disclosed comes back as drift.
 ```
 
-**This is the shape PhanesLight is built for.** It pays off most when you write a plan first, as numbered steps grouped into phases, each step with a clear boundary and each phase with an exit condition — that is what gives the orchestrator something to route. A vague sentence still works; it just gives the machinery less to hold onto.
+**This is the shape PhanesLight is built for.** It pays off most when you write a plan first, as numbered steps grouped into phases, each step with a clear boundary and each phase with an exit condition: that is what gives the orchestrator something to route. A vague sentence still works; it just gives the machinery less to hold onto.
 
 Re-running `/phaneslight:run` detects the existing install through the `.claude/.phaneslight` marker and refreshes in place, measuring agents, workflows, scripts, hooks and READMEs against the latest spec and refreshing whatever drifted.
 
@@ -211,9 +211,9 @@ Two questions get confused. **Which model you launch the session on** changes pe
 
 | The run | Recommended model | Effort |
 | --- | --- | --- |
-| **Install** — first `/phaneslight:run` in a project | **Opus 5**, or **Fable 5** if you can afford it | `high` |
-| **Update** — re-running `/phaneslight:run` | **Opus 5**, or **Fable 5** if you can afford it | `high` |
-| **Upgrade** — `/phaneslight:upgrade` | **Opus 5**, or **Fable 5** if you can afford it | `high` |
+| **Install**: first `/phaneslight:run` in a project | **Opus 5**, or **Fable 5** if you can afford it | `high` |
+| **Update**: re-running `/phaneslight:run` | **Opus 5**, or **Fable 5** if you can afford it | `high` |
+| **Upgrade**: `/phaneslight:upgrade` | **Opus 5**, or **Fable 5** if you can afford it | `high` |
 | **Everyday work** with the installed team | **Sonnet 5** (what makes Max 5x workable), or Opus 5 if budget allows. **Fable 5 for pre-planning only** | `high` |
 
 ```bash
@@ -243,12 +243,12 @@ Restart your session when it finishes so the hooks arm.
 
 ### Re-running `/phaneslight:run`
 
-Think of it as refreshing Claude's knowledge of your project. **Launch update runs on Opus 5 too** — they are deciding what your team looks like, not using it.
+Think of it as refreshing Claude's knowledge of your project. **Launch update runs on Opus 5 too**: they are deciding what your team looks like, not using it.
 
 **A re-run measures before it rebuilds** (Windows). It opens by asking what actually moved: spec version, capability census, hook table, register, file hashes, git history since the last run. Nothing moved and a clean worktree means it verifies rather than regenerates, which makes a habitual re-run cheap enough to be habitual. Where it cannot see (no git, no recorded previous run) it does the full pass, because not knowing is not the same as nothing having changed.
 
 - **Early, small project:** run it freely, several times a day.
-- **Before an implementation plan** — the highest-value run of all. Write the plan, then run `/phaneslight:run` and paste the plan or its path after the command, so the team is tuned to execute exactly it.
+- **Before an implementation plan**: the highest-value run of all. Write the plan, then run `/phaneslight:run` and paste the plan or its path after the command, so the team is tuned to execute exactly it.
 - **Session bookends:** end of a workday, or first thing next morning.
 - **Grown project:** once or twice a day, plus one before a large plan.
 
@@ -276,7 +276,7 @@ Experienced Claude Code users can skip to [How to install](#how-to-install).
 
 **1. Create a Claude account** at [claude.ai](https://claude.ai).
 
-**2. Get a plan that can carry PhanesLight.** A single task can run chains of several Claude instances, each using part of your allowance. **Pro is not enough.** You need **Claude Max 5x** (workable entry point), **Claude Max 20x** (recommended headroom), or the **Claude API** pay-per-token at [console.anthropic.com](https://console.anthropic.com) — bearing in mind multi-agent orchestration uses far more tokens than ordinary chat. Check current pricing on the official pages.
+**2. Get a plan that can carry PhanesLight.** A single task can run chains of several Claude instances, each using part of your allowance. **Pro is not enough.** You need **Claude Max 5x** (workable entry point), **Claude Max 20x** (recommended headroom), or the **Claude API** pay-per-token at [console.anthropic.com](https://console.anthropic.com), bearing in mind multi-agent orchestration uses far more tokens than ordinary chat. Check current pricing on the official pages.
 
 **3. Install Claude Code.**
 
@@ -291,7 +291,7 @@ With Node.js 18+ you can instead run `npm install -g @anthropic-ai/claude-code`.
 
 **4. Sign in.** Run `claude` in any project folder and follow the prompt, or type `/login`. Choose **Claude account** for Max, **Anthropic Console** for API.
 
-**5. Install PhanesLight** — continue directly below. It is two commands.
+**5. Install PhanesLight**: continue directly below. It is two commands.
 
 ---
 
@@ -302,7 +302,7 @@ With Node.js 18+ you can instead run `npm install -g @anthropic-ai/claude-code`.
 - [Claude Code](https://claude.com/claude-code), installed and authenticated.
 - `git`, plus your project's own language toolchain.
 - On **Windows, PowerShell 5.1+** (ships with Windows). On **macOS and Linux**, a POSIX shell.
-- **This release is Windows-first, and the gap is in the script library, not in the plugin.** The plugin's hooks dispatch through Node and run correctly on every platform as of v3.7.1. What is still Windows-only is part of the bootstrap script set PhanesLight installs into a project: `preflight`, `scaffold`, `install-templates`, `ledger`, `manifest-write`, `census-diff`, `update-preflight`, `repo-manifest`, `batch-apply` and the `hook-ledger-status` hook have no POSIX sibling yet, and the run falls back to doing that work itself. The checks that matter most day to day, `doc-check`, `doc-index`, `loc-check`, `register-check`, `new-file`, `module-list`, `list-apis`, and the `hook-stamp-guard` and `hook-size-check` hooks, are on both platforms. Full parity lands in a later version.
+- **Full platform parity from v3.7.2.** Every script PhanesLight installs into a project now has both a Windows and a POSIX variant: the bootstrap and inventory set (`preflight`, `scaffold`, `install-templates`, `ledger`, `manifest-write`, `census-diff`, `update-preflight`, `repo-manifest`, `batch-apply` and the `hook-ledger-status` hook) joins the day-to-day checks that were already on both. **Seven of those ten use Node to parse JSON**, which costs nothing extra: Claude Code is itself a Node program, the plugin's hooks already dispatch through Node, and `cli.js` is installed on every platform. The day-to-day checks, `doc-check`, `doc-index`, `loc-check`, `register-check`, `new-file`, `module-list`, `list-apis`, and the `hook-stamp-guard` and `hook-size-check` hooks, were already on both.
 - Recommended: `uv`, which runs the `serena` and `semble` MCP servers. The first run offers to install everything it needs.
 
 ### Install the plugin
@@ -320,7 +320,7 @@ Then **restart Claude Code**. Plugin hooks are loaded at session start, so the e
 
 On that next session you will see:
 
-> PhanesLight v3.7.1 installed. Run /phaneslight:run to update Project Memory.
+> PhanesLight v3.7.2 installed. Run /phaneslight:run to update Project Memory.
 
 ### Run it
 
@@ -339,7 +339,7 @@ The two entry points are:
 
 ### Moving a manual install onto the plugin
 
-The manual, single-file PhanesLight is **not retired**: it is a separate product, maintained at [`Aloim/phaneslight`](https://github.com/Aloim/phaneslight) and installed by fetching `phaneslight.md` into `.claude/commands/`. Both lines are at v3.7.1 and share the same project state, so moving between them is a change of delivery, not a migration.
+The manual, single-file PhanesLight is **not retired**: it is a separate product, maintained at [`Aloim/phaneslight`](https://github.com/Aloim/phaneslight) and installed by fetching `phaneslight.md` into `.claude/commands/`. The manual line is at v3.7.1 and the plugin at v3.7.2; the two share the same project state, so moving between them is a change of delivery, not a migration.
 
 If you have a manual install, **run `/phaneslight:upgrade` after installing the plugin.** It reports both entry points and their versions, archives the manual command files rather than deleting them, and leaves the plugin as the single source. This matters: project commands and plugin skills both stay available, so leaving the old files in place gives you two live entry points at two different versions with no way to tell which one ran.
 
@@ -362,10 +362,10 @@ It migrates the project behind a generated, evidence-verified checklist, preserv
 
 PhanesLight stays modular: capabilities beyond bootstrapping ship as **companion tools**. Each is a full standalone tool that works in any repository with no PhanesLight install, and each also cooperates with the structures PhanesLight generates.
 
-- **[Charon](https://github.com/Aloim/charon)** — finds dead code, unused files and dependencies, and duplication, then writes an evidence-backed audit report without touching anything. In a PhanesLight project the report is filed into the documentation tree and dead exported APIs become proposed registry annotations. Worth running before large refactors: stale code is context poison for agents.
-- **[Philia](https://github.com/Aloim/philia)** — shares a Windows terminal in the browser for collaborative or remote vibecoding: a password-protected link, shared tabs and a side chat, tunneled from your own PC with nothing for guests to install. The host keeps a kill switch and a live indicator.
-- **[Mosyn](https://github.com/Aloim/mosyn)** — a shared, disciplined project memory on decentralized storage (Walrus and SEAL): recall before acting, decision and failure logging, schema-locked session distillation with an append-only audit trail. Alongside PhanesLight it gives the whole team one durable memory across sessions, machines and teammates.
-- **[Metis](https://github.com/Aloim/metis)** — reads Claude Code's own run transcripts and reports whether your team actually used the tools and workflows it was told to, harvesting short-lived subagent transcripts before the harness discards them. In a PhanesLight project the census detects it and update runs act on its adherence report.
+- **[Charon](https://github.com/Aloim/charon)**: finds dead code, unused files and dependencies, and duplication, then writes an evidence-backed audit report without touching anything. In a PhanesLight project the report is filed into the documentation tree and dead exported APIs become proposed registry annotations. Worth running before large refactors: stale code is context poison for agents.
+- **[Philia](https://github.com/Aloim/philia)**: shares a Windows terminal in the browser for collaborative or remote vibecoding: a password-protected link, shared tabs and a side chat, tunneled from your own PC with nothing for guests to install. The host keeps a kill switch and a live indicator.
+- **[Mosyn](https://github.com/Aloim/mosyn)**: a shared, disciplined project memory on decentralized storage (Walrus and SEAL): recall before acting, decision and failure logging, schema-locked session distillation with an append-only audit trail. Alongside PhanesLight it gives the whole team one durable memory across sessions, machines and teammates.
+- **[Metis](https://github.com/Aloim/metis)**: reads Claude Code's own run transcripts and reports whether your team actually used the tools and workflows it was told to, harvesting short-lived subagent transcripts before the harness discards them. In a PhanesLight project the census detects it and update runs act on its adherence report.
 
 ---
 
@@ -373,15 +373,17 @@ PhanesLight stays modular: capabilities beyond bootstrapping ship as **companion
 
 PhanesLight never installs these. The census discovers them only if you installed them, and wires them into exactly the agents whose duties they serve, under least privilege, never as a hard dependency. **(v3.6.1)** The stack-match gate is now hard: a capability that cannot complete the sentence "granted because this project has ___" is not granted and not listed. All were verified actively maintained on 2026-07-15; re-check before adopting. Code search is absent because PhanesLight installs `semble` itself.
 
-- **Shell-output compressors** (e.g. RTK) — a PreToolUse proxy stripping noise from build, test and git output before it reaches any agent's context, preserving errors and diffs in full. Measured at ~89% noise removal in July 2026. Helps every agent that runs shell commands; needs no wiring.
-- **Usage monitors** (e.g. claude-hud, claude-monitor) — live context fill and rate-limit forecasting alongside long runs. Purely observational, zero token cost.
-- **CLAUDE.md linters** (e.g. cclint) — validate the instruction files PhanesLight generates on the CI side, catching deprecated model identifiers, broken imports and leaked keys.
+- **Shell-output compressors** (e.g. RTK): a PreToolUse proxy stripping noise from build, test and git output before it reaches any agent's context, preserving errors and diffs in full. Measured at ~89% noise removal in July 2026. Helps every agent that runs shell commands; needs no wiring.
+- **Usage monitors** (e.g. claude-hud, claude-monitor): live context fill and rate-limit forecasting alongside long runs. Purely observational, zero token cost.
+- **CLAUDE.md linters** (e.g. cclint): validate the instruction files PhanesLight generates on the CI side, catching deprecated model identifiers, broken imports and leaked keys.
 
 ---
 
 ## Version
 
-**Current: v3.7.1** (2026-09-04). The plugin has its own repository, `Aloim/phaneslightplugin`, flattened so a marketplace `github` source can load it. The haiku tier never writes code and escalates at LOW; the reviewer reviews the plan at launch and may write plan files. The hooks dispatch through a Node launcher and run on macOS and Linux as well as Windows. `plugin.json` carries the SPDX id `CC-BY-NC-4.0`. The manual install is a separate, maintained product at `Aloim/phaneslight`. See the [Changelog](Changelog.md).
+**Current: v3.7.2** (2026-09-04). POSIX parity for the bootstrap set: the ten commands that were Windows only now have POSIX siblings, so a macOS or Linux project gets the same mechanized run. Seven of the ten embed a Node program for JSON, three stay pure shell. Six hardcoded list caps are declared in the template manifest, and the publish script gains three guards. No file format, schema, flag or exit code changed. See the [Changelog](Changelog.md).
+
+**v3.7.1** (2026-09-04). The plugin has its own repository, `Aloim/phaneslightplugin`, flattened so a marketplace `github` source can load it. The haiku tier never writes code and escalates at LOW; the reviewer reviews the plan at launch and may write plan files. The hooks dispatch through a Node launcher and run on macOS and Linux as well as Windows. `plugin.json` carries the SPDX id `CC-BY-NC-4.0`. The manual install is a separate, maintained product at `Aloim/phaneslight`. See the [Changelog](Changelog.md).
 
 **v3.7.0** (2026-09-03), the plugin release. PhanesLight installs as a Claude Code plugin, the entry points are `/phaneslight:run` and `/phaneslight:upgrade`, the enforcement hooks are registered by the plugin rather than written into your project's settings, version checking is local instead of a network fetch, and the four MCP servers are offered once rather than assumed.
 
@@ -389,7 +391,7 @@ PhanesLight never installs these. The census discovers them only if you installe
 
 **Orchestration:** durable returns, the documented degradation posture, the owner-owned `pinned:project` deviations block that survives regeneration, and a requirement that at least one workflow cover recurring maintenance rather than change-type work alone.
 
-**Bootstrap and calibration:** a bootstrap snapshot may no longer state a bare negative — markers are phrased as unverified negatives with their method named, and the prose is searched before one is written. Mechanic digests are documented as unverified material requiring re-derivation before anything from them is written into a durable document. Serena is granted only where its language servers cover the stack.
+**Bootstrap and calibration:** a bootstrap snapshot may no longer state a bare negative; markers are phrased as unverified negatives with their method named, and the prose is searched before one is written. Mechanic digests are documented as unverified material requiring re-derivation before anything from them is written into a durable document. Serena is granted only where its language servers cover the stack.
 
 Full accounting, and the complete release history from v2.1 onward, in [`Changelog.md`](Changelog.md). The last pre-ladder distribution is v3.4.1, available from the repository's tags (`git checkout v3.4.1`); it is no longer carried inside the release tree.
 

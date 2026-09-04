@@ -6,6 +6,65 @@ All notable changes to **PhanesLight**. The authoritative version marker is the 
 
 ---
 
+## v3.7.2 (2026-09-04)
+
+**POSIX parity for the bootstrap set. The ten Windows-only commands now have POSIX siblings, so a macOS or Linux project gets the same mechanized run a Windows one has had since v3.4.**
+
+### 1. Ten ports, and the run stops falling back to doing the work itself
+
+`preflight`, `scaffold`, `install-templates`, `ledger`, `manifest-write`, `census-diff`, `update-preflight`, `repo-manifest`, `batch-apply` and the `hook-ledger-status` hook ship as POSIX shell scripts. The POSIX dispatcher's refusal block is gone, the ten `posix` arrays in `templates/MANIFEST.json` are filled, and a POSIX install now writes 26 files into a project where it wrote 16.
+
+The parity claim is a measured one, not an assertion. Every port was run side by side with its PowerShell sibling against byte-identical copies of the same fixture project, and the two were compared on exit code, on stdout, and on every file written. What that comparison asserts is stated below, because the previous claim was wrong.
+
+### 2. Seven of the ten embed a Node program, and the reason is JSON
+
+The v3.4 ruling was that no script would hand-roll a shell JSON parser and that Node would not become a hard dependency of an otherwise pure shell script. The first half stands untouched. The second was made when the library ran without Node, and under the plugin that premise is gone: `hooks/hooks.json` dispatches every hook through `scripts/hook-run.js`, `cli.js` is installed on every platform, and `install-templates` smoke-runs `node .phaneslight/scripts/cli.js` as part of its own checklist. Node is already required.
+
+**The embedding shape was chosen twice, and the first choice was wrong.** The obvious form, a quoted here-document piped to `node -`, was measured on the target toolchain and found to deliver any body of 4096 bytes or more as ZERO bytes, silently, with no error from the shell and none from Node. Every one of these programs is five to eight times that size, so three ports briefly existed that printed nothing and exited 0, which for an advisory sensor is indistinguishable from a clean report. The shipped form reads the program out of the script's own tail instead: no size limit, no temporary file, and stricter literality than a here-document, because the shell never sees the JavaScript at all. Each file is therefore two languages with a marker between them, and each half is checked by its own parser at publish time.
+
+Three ports read no JSON beyond one configuration key and stay pure shell: `hook-ledger-status`, `ledger` and `scaffold`. The other seven parse structures the existing regex extractors cannot express, an array of objects, a dictionary keyed by user paths, a settings file whose unknown keys must survive a rewrite, and each is a `sh` wrapper around an embedded Node program.
+
+**Every one of those seven emits JSON through a ported node-parity emitter rather than through `JSON.stringify`.** A plain JavaScript object lists integer-like keys first whatever order they were inserted in, and `annotated-files.json`, `state.files` and the index dictionaries are all keyed by user paths, so a tracked file named `123` would move to the top and the two platforms would write different bytes. Every user-keyed dictionary is a `Map` and is emitted in insertion order. There is a fixture for it.
+
+### 3. The parity invariant was stated wrong, and is corrected
+
+Two script headers claimed their stdout was byte-identical to their POSIX sibling's. Measured false: PowerShell's host appends CRLF to every `Write-Output` object when stdout is redirected, so a JSON report differs by the terminating CR and a line-oriented report differs on every line. The comments in `batch-apply.ps1` and `repo-manifest.ps1` now state what is actually true and what every acceptance test asserts: **exit code identical, stdout identical after stripping CR, every written file byte-identical.**
+
+The Windows side was deliberately not changed to write LF only. `update-preflight` captures `census-diff` in-process through the pipeline, so switching that script to a stream write would leave the captured output empty and kill the census sensor: a re-plumbing of the verified Windows side for a benefit no reader needs, since every consumer tolerates a trailing CR.
+
+### 4. Six hardcoded caps are now declared
+
+`templates/MANIFEST.json`'s `constants` block gains `batchApplyDiffCap` 20000, `repoManifestListCap` 100, `preflightListCap` 20, `censusListCap` 100, `manifestWriteDropCap` 20 and `updatePreflightListCap` 100. They stay hardcoded in their scripts, because `MANIFEST.json` is fetched into staging and never installed into `.phaneslight/`, so no installed script can read it at runtime. Declaring them puts every named number in the library in one place, which is what the block was for. v3.7.1 recorded two of these as an inconsistency; the sweep found five, and a second pass found the sixth, the cap `update-preflight` puts on `drifted`, `missing`, `customizations.entries` and `gitDelta.changedFiles`. Its POSIX port already named `updatePreflightListCap` in a comment against a manifest key that did not yet exist.
+
+### 5. Documentation now says both platforms wherever it said Windows
+
+The run skill, the upgrade skill, the README and the install checklist all carried "Windows only this cycle" against the ten commands and against the ledger hook. Every one of those statements is rewritten. The upgrade skill's item 15 is inverted: the two POSIX invocations that were required to be refused are now required to succeed, and a refusal is the defect. Item 16 is rewritten around the hook script on disk under its platform extension.
+
+**Two upgrade-verification items were stale before this release and are repaired by it.** Items 4 and 24 asserted that hook entries live in `.claude/settings.json`, which has been false since v3.7.0 moved registration into the plugin, and which item 26 of the same file contradicted. Not caused by this release, found by its sweep, fixed because the file was already open.
+
+### 6. Three publish guards, each fired against a forced violation before it was trusted
+
+- **Guard 7** refuses when the manifest and the tree disagree in either direction: a listed path missing from the tree, or a template file no array names. Filling ten empty arrays at once is exactly the change that leaves one behind.
+- **Guard 8** reads every template stamp, taking each name from the manifest entry that lists the file. Guard 4 checks four stamps by hand; a stale stamp anywhere else is a file `install-templates` will refuse at install time.
+- **Guard 9** parses every POSIX template script, and refuses outright when `dash` is absent rather than skipping, because a guard that skips is a guard that does not fire.
+
+### 7. Three honesty repairs found while verifying the ports
+
+The port work compared the two platforms against each other, which is how these three were found: two of them had been agreeing, wrongly, for a long time.
+
+**`scaffold` announced directories it had not created.** On Windows, `New-Item -ItemType Directory -Force` against a path whose ancestor is a FILE returns without error and creates nothing, so `Ensure-Dir` recorded the path as created. Measured on a project with a file where `documentation/plans` belongs: exit 0, two `CREATED` lines, neither directory on disk. The creation call is now `[System.IO.Directory]::CreateDirectory`, which throws and names the blocking path the way `mkdir` does on POSIX, and the writer asserts afterwards that the directory is really there. A second defect was present on BOTH platforms and so had matched in every differential test: the existence pre-checks were untyped, so a file where a directory belongs printed `EXISTS <path>/` and a directory where a file belongs printed `EXISTS <path>`. Both are now typed, and a wrong-type path is a failure naming the path, never a skip. `scaffold`'s failure contract is unchanged: it lists what it created, names the failure and exits 1.
+
+**`update-preflight` could return a quiet all-clear from a sensor that had just said it could not measure.** Passing `--spec-version` with no value sets the spec sensor to `available: false, delta: true`, and a comment promised this would keep the verdict from being quiet. It did not: the verdict read the spec sensor as `available AND delta`, so the failed reading was discarded along with the legitimately quiet no-flag case. Measured on a compliant project: `spec.delta` true and `quiet` true in one verdict. The verdict now reads the spec delta alone, which keeps the no-flag case quiet (its delta is false) and lets a failed reading gate, exactly as every other sensor already behaved. Nothing else reads `quiet`, and the fast path is unaffected on a healthy project.
+
+**`hook-stamp-guard` emitted an em dash in its block message.** Both variants built the character at runtime, which is why no sweep of the source had ever seen it. The message now matches the sentence the run skill has always quoted, to the byte, on both platforms.
+
+**Installed project impact:**
+- Affected: `.phaneslight/scripts/` on POSIX gains ten scripts, 16 files to 26; `.phaneslight/scripts/` and `.claude/template/` on both platforms (every template stamp moves to `phaneslight-template v3.7.2`); `.phaneslight/config.json` (`"phanesLightVersion": "3.7.2"` and the `templates` block version). Three Windows scripts changed behaviour, all of them repairs described in section 7: `scaffold.ps1`, `update-preflight.ps1` and `hook-stamp-guard.ps1`. Every other Windows diff is the stamp line, plus one corrected comment in each of two files.
+- Breaking: **no.** No file format, schema, flag, exit code or path changed, and `migrationBoundaries` is unchanged, so a POSIX project picks the ten scripts up through an ordinary update run rather than through a migration. What changes on POSIX is that commands which used to be refused by name now run, so a workflow that routed around them can stop.
+- Verify: on POSIX, `node .phaneslight/scripts/cli.js preflight` emits a digest whose `platform` is `"posix"`, and `node .phaneslight/scripts/cli.js ledger status` prints `ABSENT` or `CLOSED`; on both platforms every installed template stamp reads `phaneslight-template v3.7.2` and `.phaneslight/config.json` carries `"phanesLightVersion": "3.7.2"`. For the section 7 repairs: put a file where a documentation subdirectory belongs and run `scaffold`, which must exit 1 naming that path rather than exit 0 announcing directories that are not there; run `update-preflight --spec-version` with no value on a project that is otherwise quiet, whose verdict must now read `"quiet": false`. Run `/phaneslight:upgrade`.
+
+---
+
 ## v3.7.1 (2026-09-04)
 
 **The marketplace moves, and two rules in the lineup change. The haiku tier stops writing code entirely, and the reviewer picks up planning as its first duty.**
@@ -183,7 +242,7 @@ The legacy `Aloim/phanes` repository is being handed to a separate and **more so
 
 **The upgrade gains a legacy-name gate, and it is the migration's load-bearing safety check.** Every legacy signal the upgrade reads keys on the **pre-rename name space**: `.phanes/`, `.claude/.phanes`, `phanesVersion`. Up to v3.4.1 that name space belonged to this product alone, so its presence *proved* a legacy install. It no longer does: the incoming Phanes project inherits the repository and the name, and an install of it presents the same directory, marker and command name. Migrating one would be file surgery on another product's state, performed by a prompt that does not know its layout. **The pre-rename name space now belongs to PhanesLight only at v3.4.1 and below**, a set that is closed and will never grow. A `.phanes/` install at v3.5.0 or above, at a version outside the published pre-rename history, or with no readable version at all, is refused with an explanation and nothing is touched; both directories carrying a `config.json` is a stop-and-ask, since an interrupted migration and two products in one repository need opposite handling. The asymmetry is the argument: refusing a genuine legacy install costs one clarifying answer, adopting a foreign one starts a migration that cannot be finished or undone. `PhanesLightUpgrade.md` Step 3b carries the routing table; Phase U4 item 25 verifies the gate was evaluated.
 
-**The `older version/` folder now holds the complete v3.4.1 distribution** — its prompt, its upgrade prompt, its README, its changelog and its full template library — instead of a flat list of bare prompt files going back to v1. Every earlier prompt is removed. v3.6.0 replaced the review chain with an escalation ladder, which is a real change in how work is verified, so the release that carries it to the public also ships the last pre-ladder version whole, and you choose which workflow you want rather than having the choice made for you.
+**The `older version/` folder now holds the complete v3.4.1 distribution** (its prompt, its upgrade prompt, its README, its changelog and its full template library) instead of a flat list of bare prompt files going back to v1. Every earlier prompt is removed. v3.6.0 replaced the review chain with an escalation ladder, which is a real change in how work is verified, so the release that carries it to the public also ships the last pre-ladder version whole, and you choose which workflow you want rather than having the choice made for you.
 
 Also shipping as a plugin in the Anthropic Marketplace (link to follow).
 

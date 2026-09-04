@@ -1,7 +1,7 @@
 {
   "name": "phaneslight",
   "description": "Multi-agent orchestration and project-memory system for Claude Code. Generates a project-specific agent roster, enforces documentation and size discipline through hooks, and maintains a durable project memory across sessions.",
-  "version": "3.7.1",
+  "version": "3.7.2",
   "author": { "name": "Aloim", "url": "https://github.com/Aloim" },
   "homepage": "https://github.com/Aloim/phaneslightplugin",
   "repository": "https://github.com/Aloim/phaneslightplugin",

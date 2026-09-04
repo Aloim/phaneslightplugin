@@ -1,26 +1,21 @@
 #!/bin/sh
-# phaneslight-template v3.7.1 phaneslight
+# phaneslight-template v3.7.2 phaneslight
 # Dispatcher. Routes `phaneslight <subcommand> [args]` to the sibling script in this directory.
 # Resolves siblings by this script's own location, so it works from any working directory.
 here=$(CDPATH= cd -- "$(dirname -- "$0")" && pwd)
 
 if [ "$#" -lt 1 ]; then
-  echo "phaneslight: subcommands: new-file loc-check doc-check register-check doc-index module-list list-apis regen-registry api-diff"
+  echo "phaneslight: subcommands: new-file loc-check doc-check register-check doc-index module-list list-apis regen-registry api-diff preflight update-preflight install-templates scaffold ledger hook-ledger-status manifest-write census-diff repo-manifest batch-apply"
   exit 0
 fi
 
 sub=$1
 shift
 
-# repo-manifest, batch-apply, and the v3.4 bootstrap set ship Windows-only in v3.4; the
-# POSIX port is deferred. Refusing here by name keeps a deferred command from
-# masquerading as a typo.
-case "$sub" in
-  repo-manifest|batch-apply|preflight|install-templates|scaffold|ledger|hook-ledger-status|manifest-write|census-diff|update-preflight)
-    echo "phaneslight: '$sub' is not available on this platform yet (Windows only in v3.4); the POSIX port is planned" >&2
-    exit 1
-    ;;
-esac
+# There is no by-name refusal block any more (v3.7.2). It existed because the v3.4 bootstrap
+# set was Windows only and a deferred command needed to refuse rather than look like a typo;
+# all ten now have POSIX siblings, so an unknown name falls through to the unknown-subcommand
+# refusal below, which is where a typo belongs.
 
 if [ -f "$here/$sub.sh" ]; then
   exec sh "$here/$sub.sh" "$@"

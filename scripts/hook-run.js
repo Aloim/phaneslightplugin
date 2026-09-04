@@ -1,5 +1,5 @@
 #!/usr/bin/env node
-// phaneslight-plugin v3.7.1 hook-run
+// phaneslight-plugin v3.7.2 hook-run
 //
 // Cross-platform launcher for the three project-installed PhanesLight hook scripts.
 //
@@ -13,9 +13,11 @@
 // Node is the one interpreter guaranteed present (Claude Code is itself a Node program), and
 // `node <file>` parses identically in cmd, PowerShell and sh, so the dispatch decision moves
 // here. Windows runs the .ps1, POSIX runs the .sh, and a hook whose platform variant does not
-// exist is a silent no-op rather than a broken command. That last case is not hypothetical:
-// hook-ledger-status has no POSIX sibling yet, and skipping it is what the spec already
-// prescribed back when settings.json could simply omit the entry.
+// exist is a silent no-op rather than a broken command. As of v3.7.2 all three hooks have both
+// variants, so that path now covers only a project with no .phaneslight/ at all, or one whose
+// library was installed before the port. It is kept because it is what the spec prescribed back
+// when settings.json could simply omit the entry, and because a missing script must never become
+// a broken command.
 //
 // Exit codes from the hook script itself pass through UNCHANGED. hook-stamp-guard is a
 // blocking PreToolUse hook whose non-zero exit is the block, so swallowing it would disarm

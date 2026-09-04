@@ -1,5 +1,5 @@
 #!/usr/bin/env node
-// phaneslight-plugin v3.7.1 install-notice
+// phaneslight-plugin v3.7.2 install-notice
 //
 // SessionStart notice, once per install. Plain stdout reaches the model, not the user;
 // the systemMessage JSON field is the only channel that reliably reaches the human.
@@ -15,7 +15,7 @@
 const fs = require('fs');
 const path = require('path');
 
-const VERSION = '3.7.1';
+const VERSION = '3.7.2';
 
 try {
   const dataDir = process.env.CLAUDE_PLUGIN_DATA;
