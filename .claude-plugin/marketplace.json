@@ -5,7 +5,7 @@
   "plugins": [
     {
       "name": "phaneslight",
-      "source": "./plugin",
+      "source": "./",
       "description": "Multi-agent orchestration and project-memory system for Claude Code."
     }
   ]

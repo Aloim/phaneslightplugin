@@ -2,7 +2,7 @@
 
 > ## v3.7.1, the plugin has its own repository
 >
-> **This repository is a plugin distribution source. It exists so that plugin marketplaces can find and serve PhanesLight, and it is built to be consumed through Claude Code's plugin system rather than by hand.** Add it as a marketplace and let the plugin manager install and update it for you. Nothing here is meant to be cloned, copied, or fetched into `.claude/commands/`: the `plugin/` tree is a plugin payload, not a prompt you install yourself, and the layout it uses (namespaced skills, plugin-registered hooks, templates resolved from `${CLAUDE_PLUGIN_ROOT}`) only works when the plugin manager is the thing loading it.
+> **This repository is a plugin distribution source. It exists so that plugin marketplaces can find and serve PhanesLight, and it is built to be consumed through Claude Code's plugin system rather than by hand.** Add it as a marketplace and let the plugin manager install and update it for you. Nothing here is meant to be cloned, copied, or fetched into `.claude/commands/`: this tree is a plugin payload, not a prompt you install yourself, and the layout it uses (namespaced skills, plugin-registered hooks, templates resolved from `${CLAUDE_PLUGIN_ROOT}`) only works when the plugin manager is the thing loading it.
 >
 > **If you want the manual, single-file install, it is a different product at a different repository:** [`github.com/Aloim/phaneslight`](https://github.com/Aloim/phaneslight), where `phaneslight.md` is fetched into `.claude/commands/` the way it always was. Use that one if you would rather own the prompt file and your own hook entries.
 >
